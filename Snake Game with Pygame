@@ -1,0 +1,190 @@
+import pygame
+import random
+import os
+
+pygame.init()
+
+# Game window
+gamewindow = pygame.display.set_mode((800 , 500))
+pygame.display.set_caption("First Pygame")
+
+def play_game():
+
+    # Variables
+
+    exit = False
+    game_over = False
+
+    snake_width = 20
+    snake_height = 20
+    snake_xcor = 100
+    snake_ycor = 200
+    snake_xcor_vel = 0
+    snake_ycor_vel = 0
+    food_width = 20
+    food_height = 20
+    food_xcor = 600
+    food_ycor = 200
+    font = pygame.font.SysFont(None, 55)
+    font_2 = pygame.font.SysFont(None, 40)
+    font_3 = pygame.font.SysFont(None, 30)
+    game_score = 0
+    snake_head = []
+    snake_list = []
+    snake_length = 1
+    gameoverwindow_color = (227, 113, 225)
+    border_color = (240, 36, 36)
+    bg_image = pygame.image.load("img.png")
+    bg_image = pygame.transform.scale(bg_image , (760 , 420)).convert_alpha()
+
+    gameover_img = pygame.image.load("img_1.png")
+    gameover_img = pygame.transform.scale(gameover_img , (800 , 500)).convert_alpha()
+
+    fps = 60
+
+    clock = pygame.time.Clock()
+
+    # Functions
+
+
+    def display_text(text, color, x, y):
+        screen_text = font.render(text, True, color)
+        gamewindow.blit(screen_text, [x,y])
+
+    def display_text_2(text, color, x, y):
+        screen_text = font_2.render(text, True, color)
+        gamewindow.blit(screen_text, [x,y])
+    def display_text_3(text, color, x, y):
+        screen_text = font_3.render(text, True, color)
+        gamewindow.blit(screen_text, [x,y])
+
+
+    snake_head.append(snake_xcor)
+    snake_head.append(snake_ycor)
+    snake_list.append(snake_head)
+
+    def display_snake(gameWindow, color, snk_list, snake_width , snake_height):
+        for x,y in snk_list:
+            pygame.draw.rect(gameWindow, color, [x, y, snake_width, snake_height])
+
+
+
+
+
+
+
+    while not exit:
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    play_game()
+
+            if event.type == pygame.QUIT:
+                exit = True
+
+                snake_xcor_vel = 5
+                snake_ycor_vel = 5
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                    snake_xcor_vel = 3
+                    snake_ycor_vel = 0
+
+                if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                    snake_xcor_vel = -3
+                    snake_ycor_vel = 0
+
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
+                    snake_ycor_vel = -3
+                    snake_xcor_vel = 0
+
+                if event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                    snake_ycor_vel = 3
+                    snake_xcor_vel = 0
+
+
+
+        gamewindow.fill("cyan")
+        gamewindow.blit(bg_image , (20 , 60))
+
+        snake_xcor += snake_xcor_vel
+        snake_ycor += snake_ycor_vel
+
+
+        if abs(snake_xcor - food_xcor) < 9 and  abs(snake_ycor - food_ycor) < 9:
+
+            food_xcor = random.randint(25, 775)
+            food_ycor = random.randint(65, 470)
+            snake_length += 6
+            game_score += 10
+
+        head = []
+        head.append(snake_xcor)
+        head.append(snake_ycor)
+        snake_list.append(head)
+
+        if (not os.path.exists("highscore.txt")):
+            with open("highscore.txt", "w") as q:
+                q.write("0")
+
+        with open("highscore.txt" , "r") as q:
+            high_score = q.read()
+
+
+
+            if str(game_score) > high_score:
+                high_score = game_score
+                with open("highscore.txt" , "w") as q:
+                    q.write(str(high_score))
+
+
+
+
+
+
+        display_text(f"SCORE : {game_score}", "magenta", 20 , 9)
+        display_text(f"HIGH SCORE : {high_score}", "magenta", 450, 9)
+
+        pygame.draw.line(gamewindow , border_color , (20 , 60) , (780 , 60) , 5)
+        pygame.draw.line(gamewindow, border_color, (780 , 60)  , (780, 480) , 5)
+        pygame.draw.line(gamewindow, border_color, (780, 480)  , (20, 480)  , 5)
+        pygame.draw.line(gamewindow, border_color, (20, 480)  , (20 , 60)   , 5)
+
+
+        pygame.draw.rect(gamewindow, "purple", [food_xcor, food_ycor, food_width, food_height])
+
+        display_snake(gamewindow, "black", snake_list, snake_width , snake_height)
+
+        if snake_xcor > 776 or snake_xcor < 22 or snake_ycor > 478 or snake_ycor < 58:
+
+         game_over = True
+
+        if len(snake_list) > snake_length:
+            del snake_list[0]
+
+        if head in snake_list[:-1]:
+            game_over = True
+
+
+        if game_over:
+            gamewindow.blit(gameover_img , (0 , 0))
+            display_text("GAMEOVER !!!", (1, 18, 84) , 250 , 120)
+            display_text(f"SCORE : {game_score}", (1, 18, 84), 250, 230)
+            display_text(f"HIGH SCORE : {high_score}", (1, 18, 84), 250, 270)
+            display_text("GAMEOVER !!!", (1, 18, 84), 250, 120)
+            display_text_3("CREDIT : Tawkir Hassan Choudhury", (1, 18, 84), 20, 20)
+            display_text_2("Press Enter to play again." , (1, 18, 84) , 210 , 400)
+
+
+
+        pygame.display.update()
+
+        clock.tick(fps)
+
+    pygame.quit()
+    quit()
+
+play_game()
+
